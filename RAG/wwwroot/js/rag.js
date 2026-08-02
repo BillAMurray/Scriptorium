@@ -102,10 +102,13 @@
     function updateIndexTarget() {
         const folder = el.folderInput.value.trim();
 
-        el.indexTarget.innerHTML = folder
-            ? `Folder: <code>${escapeHtml(folder)}</code>`
-            : `No folder chosen — pick one from the dataset's folder list, or use ` +
-              `<strong>Add to this index…</strong>`;
+        el.indexTarget.innerHTML =
+            !currentDataset
+                ? `No dataset selected — create one above first.`
+                : folder
+                    ? `Folder: <code>${escapeHtml(folder)}</code>`
+                    : `No folder chosen — pick one from the dataset's folder list, or use ` +
+                      `<strong>Add to this index…</strong>`;
 
         // Keep the dataset's folder list in step with what is selected.
         el.datasetDetail?.querySelectorAll(".dataset-folder").forEach((row) =>
@@ -165,6 +168,15 @@
 
     // ---------- The library ----------
 
+    // Every library action except "New dataset…" needs a dataset to act on. With an empty library
+    // — a first run, or everything archived — they are hidden rather than left to answer a click
+    // with an error, which leaves only the one button that makes sense.
+    function showLibraryActions(hasDataset) {
+        for (const button of [el.addFolderBtn, el.renameDatasetBtn, el.duplicateDatasetBtn, el.deleteDatasetBtn]) {
+            show(button, hasDataset);
+        }
+    }
+
     function datasetError(message) {
         if (!message) {
             show(el.datasetError, false);
@@ -187,12 +199,17 @@
 
         if (!data.datasets.length) {
             el.datasetList.innerHTML =
-                `<div class="text-muted p-2">No datasets yet — create one to get started.</div>`;
+                `<div class="text-muted p-2">No datasets yet — start with <strong>New dataset…</strong> below.</div>`;
             el.datasetSummary.textContent = "empty library";
             currentDataset = null;
+            showLibraryActions(false);
+            hideFolderPicker();
             renderDetail(null);
+            updateIndexTarget();
             return;
         }
+
+        showLibraryActions(true);
 
         // Fall back to the first dataset if the remembered one has been deleted or renamed away.
         const saved = localStorage.getItem("ragDataset");
