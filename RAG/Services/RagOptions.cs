@@ -15,7 +15,7 @@ public sealed class RagOptions
     /// reading-comprehension job rather than a recall one — a model small enough to fit entirely
     /// in VRAM answers far faster than a larger one that spills onto the CPU.
     /// </summary>
-    public string ChatModel { get; set; } = "gemma3:12b";
+    public string ChatModel { get; set; } = "gemma4:12b";
 
     /// <summary>
     /// The model that turns text into vectors. Must be an "embedding" capable model.

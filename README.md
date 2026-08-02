@@ -23,14 +23,14 @@ ollama pull snowflake-arctic-embed:33m
 ```
 
 ```bash
-ollama pull gemma3:12b
+ollama pull gemma4:12b
 ```
 
 Two models are needed because they do different jobs. The *embedding* model turns text into
 vectors for search; the *chat* model writes prose. An embedding model can't chat, and using a
 12B chat model to embed thousands of chunks would be enormously slower.
 
-Any chat model works — `gemma3:12b` is a reasonable starting point. RAG doesn't need a large one,
+Any chat model works — `gemma4:12b` is a reasonable starting point. RAG doesn't need a large one,
 because the relevant passages are handed to it directly; a model that fits entirely in VRAM
 answers far faster than a bigger one that spills onto the CPU.
 
@@ -38,7 +38,7 @@ answers far faster than a bigger one that spills onto the CPU.
 [`RAG/appsettings.json`](RAG/appsettings.json), replacing whatever is there:
 
 ```json
-"ChatModel": "gemma3:12b"
+"ChatModel": "gemma4:12b"
 ```
 
 **3. Run it:**
