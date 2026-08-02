@@ -1,0 +1,326 @@
+/* Sits beside the brand in the header: keeps the name short while still saying what the app is.
+   Dropped on narrow screens, where the name alone has to carry it. */
+.navbar-tagline {
+    font-size: .8rem;
+    font-weight: 400;
+    opacity: .75;
+    margin-left: .5rem;
+}
+
+@media (max-width: 575.98px) {
+    .navbar-tagline {
+        display: none;
+    }
+}
+
+/* ---------- collapsible sections ---------- */
+
+/* Bootstrap's .card sets display:flex, which interferes with how a <details> hides its content.
+   These sections are a simple header-plus-body stack, so block layout is both safer and enough. */
+details.section.card {
+    display: block;
+}
+
+.section > summary {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    user-select: none;
+}
+
+/* Replace the browser's default triangle with one we can animate and position. */
+.section > summary {
+    list-style: none;
+}
+
+.section > summary::-webkit-details-marker {
+    display: none;
+}
+
+.section > summary:hover {
+    background-color: #eef2f7;
+}
+
+.section-title {
+    display: inline-flex;
+    align-items: center;
+    font-weight: 500;
+}
+
+/* A swapped glyph rather than a rotated CSS triangle: no transform to animate, and the open
+   and closed states are unambiguous in every browser. */
+.section-title::before {
+    content: "\25B8"; /* ▸ */
+    display: inline-block;
+    width: .9rem;
+    margin-right: .35rem;
+    color: #6c757d;
+    font-size: .9em;
+}
+
+.section[open] > summary .section-title::before {
+    content: "\25BE"; /* ▾ */
+}
+
+/* A collapsed section should still read as a closed drawer, not a floating bar. */
+.section:not([open]) > summary {
+    border-bottom: 0;
+    border-radius: inherit;
+}
+
+.sources-panel {
+    border: 1px solid #dee2e6;
+    border-radius: .375rem;
+    padding: .5rem .75rem;
+    background: #fbfcfd;
+}
+
+.sources-panel > summary {
+    color: #495057;
+}
+
+.sources-panel > summary:hover {
+    background-color: transparent;
+}
+
+/* ---------- dataset library ---------- */
+
+.dataset-list {
+    max-height: 20rem;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: .375rem;
+    background: #fff;
+}
+
+.dataset-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: .1rem .75rem;
+    width: 100%;
+    padding: .5rem .75rem;
+    border: 0;
+    border-bottom: 1px solid #f1f3f5;
+    border-left: 3px solid transparent;
+    background: transparent;
+    text-align: left;
+}
+
+.dataset-item:hover {
+    background: #f3f7ff;
+}
+
+.dataset-item.selected {
+    background: #e7f1ff;
+    border-left-color: #0d6efd;
+}
+
+.dataset-name {
+    font-weight: 500;
+}
+
+.dataset-facts {
+    grid-column: 2;
+    grid-row: 1;
+    color: #6c757d;
+    font-size: .82rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.dataset-desc {
+    grid-column: 1 / -1;
+    color: #6c757d;
+    font-size: .82rem;
+}
+
+.dataset-folders {
+    border-top: 1px solid #f1f3f5;
+    margin-top: .5rem;
+}
+
+/* Clickable, because the folder picker is hidden by default: this is how an existing folder is
+   chosen for re-indexing without going back through the browser. */
+.dataset-folder {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .75rem;
+    width: 100%;
+    padding: .25rem .35rem;
+    border: 0;
+    border-bottom: 1px solid #f1f3f5;
+    border-left: 3px solid transparent;
+    background: transparent;
+    text-align: left;
+    font-size: inherit;
+    color: inherit;
+}
+
+.dataset-folder:hover {
+    background: #f3f7ff;
+}
+
+.dataset-folder.selected {
+    background: #e7f1ff;
+    border-left-color: #0d6efd;
+}
+
+.browser {
+    border: 1px solid #dee2e6;
+    border-radius: .375rem;
+    padding: .75rem;
+    background: #f8f9fa;
+}
+
+.browse-list {
+    max-height: 16rem;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: .25rem;
+}
+
+.browse-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: .35rem .6rem;
+    border: 0;
+    border-bottom: 1px solid #f1f3f5;
+    background: transparent;
+    font-size: .9rem;
+}
+
+.browse-item:hover {
+    background: #e7f1ff;
+}
+
+/* Names the dataset a question will be put to. Uppercase and tracked out so it reads as a label
+   rather than as another field, and picked out in the same blue as the selected dataset in the
+   library list, so the two obviously refer to the same thing. */
+.ask-dataset {
+    margin-bottom: .35rem;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+}
+
+.ask-dataset-label {
+    color: #6c757d;
+}
+
+.ask-dataset-name {
+    color: #0d6efd;
+}
+
+.answer {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-left: 3px solid #198754;
+    border-radius: .375rem;
+    padding: .9rem 1rem;
+    line-height: 1.6;
+    min-height: 3rem;
+}
+
+.answer p:last-child {
+    margin-bottom: 0;
+}
+
+.answer-waiting {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    color: #6c757d;
+}
+
+.answer-elapsed {
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+    font-size: .85rem;
+}
+
+.answer-stats {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-top: .75rem;
+    padding-top: .5rem;
+    border-top: 1px solid #dee2e6;
+    font-size: .8rem;
+    color: #6c757d;
+    font-variant-numeric: tabular-nums;
+}
+
+.answer-actions {
+    display: flex;
+    gap: .4rem;
+    margin-left: auto;
+}
+
+/* Smaller than btn-sm: these sit in a footnote row and should not compete with Ask. */
+.answer-actions .btn {
+    padding: .1rem .5rem;
+    font-size: .75rem;
+}
+
+.citation {
+    color: #0d6efd;
+    font-weight: 600;
+}
+
+.source {
+    border: 1px solid #dee2e6;
+    border-radius: .375rem;
+    padding: .5rem .75rem;
+    margin-bottom: .5rem;
+    font-size: .9rem;
+}
+
+.source > summary {
+    cursor: pointer;
+}
+
+.metric-group {
+    font-weight: 600;
+    color: #495057;
+    margin: .75rem 0 .25rem;
+}
+
+.metric-group:first-child {
+    margin-top: 0;
+}
+
+.metric-row {
+    display: grid;
+    grid-template-columns: minmax(8rem, 1.2fr) minmax(9rem, 1fr) minmax(4rem, .8fr);
+    gap: .75rem;
+    align-items: center;
+    padding: .15rem 0;
+}
+
+.metric-value {
+    font-variant-numeric: tabular-nums;
+    color: #212529;
+}
+
+.metric-bar {
+    height: .5rem;
+}
+
+.source-text {
+    margin-top: .5rem;
+    padding: .5rem;
+    background: #f8f9fa;
+    border-radius: .25rem;
+    white-space: pre-wrap;
+    font-size: .85rem;
+    max-height: 14rem;
+    overflow-y: auto;
+}

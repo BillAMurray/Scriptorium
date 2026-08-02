@@ -1,0 +1,202 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Ask your documents";
+}
+
+<link rel="stylesheet" href="~/css/rag.css" asp-append-version="true" />
+
+@* POST handlers are antiforgery-protected; rag.js reads this token and sends it as a header. *@
+@Html.AntiForgeryToken()
+
+<h1 class="h3 mb-1">Ask your documents</h1>
+<p class="text-muted">
+    Keep a library of indexes, point each one at the folders you care about, then ask questions in
+    plain English. Everything runs locally against Ollama — no document ever leaves this machine.
+</p>
+
+<div id="health" class="alert alert-secondary py-2 small d-flex align-items-center gap-2">
+    <span class="spinner-border spinner-border-sm"></span> Checking Ollama…
+</div>
+
+@*
+    Sections whose open/closed state should survive a reload carry data-remember. The rest start
+    collapsed every time, so the page always opens on the one thing that matters — the library.
+*@
+<details id="metricsPanel" class="card mb-3 section">
+    <summary class="card-header">
+        <span class="section-title">Resources</span>
+        <span id="metricsSummary" class="small text-muted"></span>
+    </summary>
+    <div class="card-body">
+        <div id="metricsBody" class="small text-muted">Open to start sampling…</div>
+        <div id="metricsNote" class="alert alert-warning small mt-2 mb-0 d-none"></div>
+    </div>
+</details>
+
+<!-- ============ The library ============ -->
+<details id="sectionDataset" class="card mb-3 section" data-remember="1" open>
+    <summary class="card-header">
+        <span class="section-title">Choose a dataset</span>
+        <span id="datasetSummary" class="small text-muted"></span>
+    </summary>
+    <div class="card-body">
+        <div id="datasetList" class="dataset-list mb-2">
+            <div class="text-muted small p-2">Loading the library…</div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+            <button class="btn btn-sm btn-primary" id="addFolderBtn">Add to this index…</button>
+            <button class="btn btn-sm btn-outline-primary" id="newDatasetBtn">New dataset…</button>
+            <button class="btn btn-sm btn-outline-secondary" id="renameDatasetBtn">Rename…</button>
+            <button class="btn btn-sm btn-outline-secondary" id="duplicateDatasetBtn">Duplicate…</button>
+            <button class="btn btn-sm btn-outline-danger" id="deleteDatasetBtn">Delete…</button>
+        </div>
+
+        <div id="copyWrap" class="mt-3 d-none">
+            <div class="progress" style="height: 1.25rem;">
+                <div id="copyBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                     role="progressbar" style="width: 0%">0%</div>
+            </div>
+            <div id="copyText" class="small text-muted mt-1"></div>
+        </div>
+
+        <div id="datasetError" class="alert alert-danger small mt-3 d-none"></div>
+
+        <div id="datasetHealth" class="alert alert-danger small mt-3 d-none">
+            <div id="datasetHealthText" class="mb-2"></div>
+            <button class="btn btn-sm btn-danger" id="quarantineBtn">Quarantine the journal and open</button>
+        </div>
+
+        <div id="modelMismatch" class="alert alert-warning small mt-3 d-none"></div>
+
+        <div id="datasetDetail" class="mt-3 small text-muted"></div>
+
+        <div class="form-text mt-2">
+            Library folder: <code>@Model.LibraryPath</code> — one subfolder per dataset, each holding
+            its own index. Copy a dataset folder elsewhere to move or back it up.
+        </div>
+    </div>
+</details>
+
+@*
+    Hidden until there is a reason to show it: picking a folder only matters when adding one to a
+    dataset, and a permanently visible picker invites people to set it when they did not need to.
+*@
+<details id="sectionFolder" class="card mb-3 section d-none">
+    <summary class="card-header">
+        <span class="section-title">Choose a folder</span>
+        <span id="folderStats" class="small text-muted"></span>
+    </summary>
+    <div class="card-body">
+        <div class="input-group mb-2">
+            <input type="text" class="form-control" id="folderInput"
+                   placeholder="C:\Users\@(Environment.UserName)\Documents" spellcheck="false" />
+            <button class="btn btn-outline-secondary" type="button" id="browseBtn">Browse…</button>
+        </div>
+        <div class="form-text">
+            Indexes
+            @for (var i = 0; i < RagOptions.SupportedExtensions.Length; i++)
+            {
+                <code>@RagOptions.SupportedExtensions[i]</code>@(i < RagOptions.SupportedExtensions.Length - 1 ? ", " : " ")
+            }
+            @(Model.Options.SearchRecursively ? "including subfolders" : "in this folder only").
+            A dataset can hold as many folders as you like — index them one at a time.
+        </div>
+
+        <div id="browser" class="browser d-none mt-3">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <button class="btn btn-sm btn-outline-secondary" id="browseUpBtn">↑ Up</button>
+                <code id="browsePath" class="small text-truncate flex-grow-1"></code>
+                <button class="btn btn-sm btn-primary" id="browseUseBtn">Use this folder</button>
+            </div>
+            <div id="browseList" class="browse-list"></div>
+        </div>
+    </div>
+</details>
+
+<!-- ============ Indexing ============ -->
+<details id="sectionIndex" class="card mb-3 section">
+    <summary class="card-header">
+        <span class="section-title">Build the index</span>
+        <span id="indexSummary" class="small text-muted"></span>
+    </summary>
+    <div class="card-body">
+        <div id="indexTarget" class="small text-muted mb-2"></div>
+
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <button class="btn btn-primary" id="indexBtn">Index folder</button>
+            <button class="btn btn-outline-secondary" id="rebuildBtn">Rebuild from scratch</button>
+            <button class="btn btn-outline-danger" id="clearBtn">Remove folder from dataset</button>
+            <button class="btn btn-outline-danger d-none" id="cancelBtn">Stop</button>
+        </div>
+        <div class="form-text mt-2">
+            Re-indexing only processes files that are new or changed, so it is fast the second time.
+        </div>
+
+        <div id="progressWrap" class="mt-3 d-none">
+            <div class="progress" style="height: 1.25rem;">
+                <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                     role="progressbar" style="width: 0%">0%</div>
+            </div>
+            <div id="progressText" class="small text-muted mt-1"></div>
+        </div>
+
+        <div id="warnings" class="alert alert-warning small mt-3 d-none"></div>
+        <div id="indexError" class="alert alert-danger small mt-3 d-none"></div>
+
+        <details id="docsDetails" class="mt-3 d-none">
+            <summary class="small">Indexed files</summary>
+            <div id="docsList" class="small mt-2"></div>
+        </details>
+    </div>
+</details>
+
+<!-- ============ Asking ============ -->
+<details id="sectionAsk" class="card mb-3 section" data-remember="1" open>
+    <summary class="card-header">
+        <span class="section-title">Ask a question</span>
+        <span id="askScopeSummary" class="small text-muted"></span>
+    </summary>
+    <div class="card-body">
+        <div class="mb-2">
+            @* Which dataset the question will go to — the library list may be scrolled away or collapsed. *@
+            <div id="askDataset" class="ask-dataset"></div>
+            <label class="form-label small text-muted mb-1" for="scopeSelect">Search</label>
+            <select class="form-select form-select-sm" id="scopeSelect">
+                <option value="">The whole dataset</option>
+            </select>
+        </div>
+
+        <textarea class="form-control" id="question" rows="3"
+                  placeholder="What does the contract say about termination notice periods?"></textarea>
+        <div class="d-flex gap-2 mt-2">
+            <button class="btn btn-success" id="askBtn">Ask</button>
+            <button class="btn btn-outline-secondary d-none" id="stopBtn">Stop</button>
+            <span id="askStage" class="align-self-center small text-muted"></span>
+        </div>
+
+        <div id="answerWrap" class="mt-3 d-none">
+            <div id="answer" class="answer"></div>
+        </div>
+
+        <details id="sourcesWrap" class="mt-3 d-none section sources-panel">
+            <summary>
+                <span class="section-title">Sources</span>
+                <span id="sourcesCount" class="small text-muted"></span>
+            </summary>
+            <div id="sources" class="mt-2"></div>
+        </details>
+
+        <div id="askError" class="alert alert-danger small mt-3 d-none"></div>
+    </div>
+</details>
+
+<p class="small text-muted">
+    Chat model: <code>@Model.Options.ChatModel</code> ·
+    Embeddings: <code>@Model.Options.EmbeddingModel</code>
+</p>
+
+@section Scripts {
+    <script src="~/js/rag.js" asp-append-version="true"></script>
+}

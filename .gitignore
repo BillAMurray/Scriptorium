@@ -1,0 +1,53 @@
+# ============================================================================
+#  YOUR DOCUMENTS AND INDEXES — never commit these
+# ============================================================================
+# The library: one folder per dataset, each holding a SQLite index built from
+# your own documents. The index stores the full text of everything you indexed,
+# so publishing one publishes the documents themselves.
+#
+# Nothing here needs to be in the repository: the app creates the folder on
+# first run, and every index can be rebuilt by re-indexing.
+DataSets/
+
+# Belt and braces, in case DataSetsRoot is pointed somewhere else inside the
+# repo, or an index is left at the old default location.
+*.db
+*.db-wal
+*.db-shm
+dataset.json
+
+# Transcripts saved from the Ask panel — they contain your questions and
+# passages quoted out of your documents.
+rag-*.txt
+
+# ============================================================================
+#  Local and personal files
+# ============================================================================
+# Personal notes and question lists that tend to accumulate next to the code.
+*.docx
+*.xlsx
+*.pdf
+
+# Claude Code's per-machine settings.
+.claude/settings.local.json
+
+# Anything explicitly marked local, plus the usual secret-bearing filenames.
+# (This project has no secrets today — it only talks to a local Ollama with no
+# authentication — but these cost nothing and prevent a future mistake.)
+appsettings.*.local.json
+*.local.json
+.env
+.env.*
+secrets.json
+
+# ============================================================================
+#  Build output and IDE state
+# ============================================================================
+bin/
+obj/
+.vs/
+.idea/
+*.user
+*.suo
+*.userprefs
+TestResults/

@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <!-- Windows-target TFM so the built-in Windows.Media.Ocr engine is available. That keeps OCR
+         dependency-free: no Tesseract install and no language data to download. The app was
+         already Windows-only in practice (drive-letter folder browsing, memory counters). -->
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.10" />
+    <PackageReference Include="PdfPig" Version="0.1.15" />
+    <!-- Renders PDF pages to bitmaps (PDFium) so scanned pages can be handed to OCR.
+         PdfPig reads text and structure but cannot rasterise. -->
+    <PackageReference Include="PDFtoImage" Version="5.3.0" />
+    <!-- Microsoft.Data.Sqlite 10.0.10 still pulls SQLitePCLRaw 2.1.11, which carries advisory
+         GHSA-2m69-gcr7-jv3q. Pinning the bundle forward picks up the patched native SQLite. -->
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.5" />
+  </ItemGroup>
+
+</Project>

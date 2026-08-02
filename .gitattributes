@@ -1,0 +1,18 @@
+# Normalise line endings on commit and check out native ones. Without this, a repository authored
+# on Windows shows every line of every file as changed the moment someone clones it elsewhere.
+* text=auto
+
+*.cs      text diff=csharp
+*.cshtml  text
+*.css     text
+*.js      text
+*.json    text
+*.md      text
+*.csproj  text
+*.slnx    text
+
+*.ico  binary
+*.png  binary
+*.jpg  binary
+*.pdf  binary
+*.db   binary
