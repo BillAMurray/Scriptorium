@@ -30,6 +30,8 @@ namespace RAG
             });
 
             builder.Services.AddSingleton<SystemMetrics>();
+            builder.Services.AddSingleton<BrowserPresence>();
+            builder.Services.AddHostedService<BrowserSessionService>();
             builder.Services.AddSingleton<DatasetRegistry>();
             builder.Services.AddSingleton<VectorStoreProvider>();
             builder.Services.AddSingleton<OcrService>();

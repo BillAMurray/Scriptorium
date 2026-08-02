@@ -1,10 +1,14 @@
 {
   "$schema": "https://json.schemastore.org/launchsettings.json",
   "profiles": {
+    // launchBrowser is deliberately false: the app opens the browser itself (see
+    // BrowserSessionService), which works the same whether it was started from Visual Studio,
+    // "dotnet run", or Scriptorium.cmd. Leaving it true here would open a second tab under
+    // Visual Studio only.
     "http": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": true,
+      "launchBrowser": false,
       "applicationUrl": "http://localhost:5227",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
@@ -13,7 +17,7 @@
     "https": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": true,
+      "launchBrowser": false,
       "applicationUrl": "https://localhost:7299;http://localhost:5227",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

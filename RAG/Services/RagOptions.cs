@@ -76,6 +76,23 @@ public sealed class RagOptions
     /// <summary>Files larger than this are skipped, to avoid a single monster PDF stalling the index.</summary>
     public int MaxFileSizeMb { get; set; } = 200;
 
+    /// <summary>Open the app in the default browser on startup, so running it is a single step.</summary>
+    public bool LaunchBrowser { get; set; } = true;
+
+    /// <summary>
+    /// Shut the app down once the last browser tab closes, so it behaves like a desktop
+    /// application instead of a server left running in a forgotten console. Turn this off when
+    /// running it as a long-lived background service.
+    /// </summary>
+    public bool ShutdownWhenBrowserCloses { get; set; } = true;
+
+    /// <summary>
+    /// How long to wait after the last tab disappears before shutting down. A refresh drops the
+    /// connection and immediately remakes it, so this needs to be comfortably longer than a
+    /// reload takes.
+    /// </summary>
+    public int BrowserGraceSeconds { get; set; } = 5;
+
     /// <summary>
     /// Folder holding the library. Each dataset is a subfolder with its own index database and a
     /// dataset.json, so a dataset can be backed up, moved or deleted as a single folder.

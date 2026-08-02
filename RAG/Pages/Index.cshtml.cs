@@ -8,6 +8,7 @@ namespace RAG.Pages
 {
     public class IndexModel(
         IndexingService indexing,
+        BrowserPresence presence,
         DatasetRegistry datasets,
         VectorStoreProvider stores,
         RagService rag,
@@ -25,6 +26,45 @@ namespace RAG.Pages
 
         public void OnGet()
         {
+        }
+
+        // ---------- Browser presence ----------
+
+        /// <summary>
+        /// Held open for as long as the page is. The app watches these connections to know whether
+        /// anyone still has it open, and shuts down when the last one goes.
+        ///
+        /// A connection rather than a polling heartbeat, because browsers throttle timers in
+        /// background tabs to about once a minute — a tab behind another window would look shut.
+        /// </summary>
+        public async Task<IActionResult> OnGetKeepAliveAsync(CancellationToken ct)
+        {
+            Response.ContentType = "text/event-stream";
+            Response.Headers.CacheControl = "no-cache";
+            Response.Headers["X-Accel-Buffering"] = "no";
+
+            presence.Opened();
+            try
+            {
+                while (!ct.IsCancellationRequested)
+                {
+                    // A comment frame: it keeps the connection demonstrably alive and gives the
+                    // write that notices a client which vanished without closing cleanly.
+                    await Response.WriteAsync(": keep-alive\n\n", ct);
+                    await Response.Body.FlushAsync(ct);
+                    await Task.Delay(TimeSpan.FromSeconds(15), ct);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // The tab closed or navigated away, which is exactly what this is here to detect.
+            }
+            finally
+            {
+                presence.Closed();
+            }
+
+            return new EmptyResult();
         }
 
         // ---------- Ollama health ----------

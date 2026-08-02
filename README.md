@@ -41,13 +41,14 @@ answers far faster than a bigger one that spills onto the CPU.
 "ChatModel": "gemma4:12b"
 ```
 
-**3. Run it:**
+**3. Run it** — double-click `Scriptorium.cmd`, or:
 
 ```bash
 dotnet run --project RAG
 ```
 
-Open the URL it prints. The page checks Ollama on load and tells you plainly if a model is
+**Your browser opens by itself, and closing the page shuts the app down.** No URL to remember and
+no console left running. The page checks Ollama on load and tells you plainly if a model is
 missing or the server isn't up.
 
 **4. Create a dataset**, click **Add to this index…**, browse to a folder of documents, and hit
@@ -189,6 +190,39 @@ first and shows the model only the handful of passages that matter.
    them, citing `[1]`, `[2]` (`RagService`). The answer streams back token by token.
 
 ---
+
+## Running it like a desktop app
+
+The app opens your default browser on startup and exits when the last tab closes, so a session is
+"run it, use it, close it" rather than "run it, find the URL, remember to stop it".
+
+Detecting a closed browser is the awkward half. The page holds one connection open for as long as
+it lives, and the app watches those connections rather than waiting to be pinged. A polling
+heartbeat would be simpler and wrong: **browsers throttle timers in background tabs to roughly
+once a minute**, so a tab sitting behind another window would be indistinguishable from a closed
+one, and the app would quit while you were still using it. A held-open connection isn't throttled,
+and it drops the moment a tab closes or the browser quits.
+
+That gives the behaviour you'd want:
+
+| | |
+|---|---|
+| Close the tab or the browser | Exits after a few seconds |
+| Refresh the page | Survives — the connection is remade inside the grace period |
+| Several tabs open | Exits only when the last one closes |
+| Tab left in the background | Stays up; not affected by timer throttling |
+| **Indexing still running** | **Stays up until the run finishes** — a long index isn't thrown away |
+| No browser ever connects | Stays up, so headless and remote use still work |
+
+| Setting | Meaning |
+|---|---|
+| `LaunchBrowser` | Open the default browser on startup |
+| `ShutdownWhenBrowserCloses` | Exit when the last tab closes. Turn off to run as a background service |
+| `BrowserGraceSeconds` | How long to wait before exiting, so a refresh doesn't trigger it (default 5) |
+
+Note that `launchSettings.json` sets `launchBrowser: false` on purpose — the app does it itself,
+which works identically from Visual Studio, `dotnet run` and `Scriptorium.cmd`. Leaving it true
+would open a second tab under Visual Studio only.
 
 ## Protecting the index
 
@@ -368,6 +402,7 @@ RAG/
     DocumentTextExtractor.cs  PDF and plain-text extraction
     OcrService.cs             renders text-less PDF pages and OCRs them (Windows.Media.Ocr)
     TextChunker.cs            splitting text into overlapping chunks
+    BrowserSession.cs         opens the browser on start, exits when the last tab closes
     Dataset.cs                dataset record and its on-disk metadata
     DatasetRegistry.cs        the library: create, rename, duplicate, delete
     DatabaseGuard.cs          refuses to open a database a foreign journal would destroy

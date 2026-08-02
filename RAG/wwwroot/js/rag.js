@@ -1063,6 +1063,11 @@
         ? localStorage.getItem(`ragFolder:${currentDataset}`) ?? ""
         : "";
 
+    // Holds a connection open so the app knows the page is still here and can shut itself down
+    // when it isn't. EventSource reconnects by itself, so a restarted server is picked up without
+    // a reload. Harmless if the feature is switched off — the server just holds the connection.
+    new EventSource("?handler=KeepAlive");
+
     updateIndexTarget();
     checkHealth();
     loadDatasets().then(() => {
