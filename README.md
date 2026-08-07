@@ -400,7 +400,9 @@ RAG/
     RagOptions.cs             configuration
     OllamaClient.cs           HTTP calls to /api/embed and /api/chat
     DocumentTextExtractor.cs  PDF and plain-text extraction
-    OcrService.cs             renders text-less PDF pages and OCRs them (Windows.Media.Ocr)
+    IOcrEngine.cs              common interface for the two OCR engines below
+    OllamaOcrService.cs       renders text-less PDF pages and OCRs them via a local vision model (default)
+    WindowsOcrService.cs      renders text-less PDF pages and OCRs them via Windows.Media.Ocr (fallback)
     TextChunker.cs            splitting text into overlapping chunks
     BrowserSession.cs         opens the browser on start, exits when the last tab closes
     Dataset.cs                dataset record and its on-disk metadata

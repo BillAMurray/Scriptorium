@@ -118,6 +118,19 @@ public sealed class RagOptions
     public bool EnableOcr { get; set; } = true;
 
     /// <summary>
+    /// Which OCR engine to use: "Ollama" (a local vision model, better accuracy on scanned
+    /// books — see <see cref="OcrModel"/>) or "Windows" (the built-in engine, no GPU or model
+    /// download needed).
+    /// </summary>
+    public string OcrProvider { get; set; } = "Ollama";
+
+    /// <summary>
+    /// Vision model Ollama uses for OCR when <see cref="OcrProvider"/> is "Ollama". Defaults to
+    /// Baidu's Unlimited-OCR, a 3B model purpose-built for document parsing.
+    /// </summary>
+    public string OcrModel { get; set; } = "frob/unlimited-ocr:q8_0";
+
+    /// <summary>
     /// A page yielding fewer characters than this is treated as an image of text and sent to OCR.
     /// Also the minimum OCR output worth keeping, which discards blank and near-blank scans.
     /// </summary>

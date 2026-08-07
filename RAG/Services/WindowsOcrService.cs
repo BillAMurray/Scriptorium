@@ -13,15 +13,18 @@ namespace RAG.Services;
 /// Uses the OCR engine built into Windows rather than Tesseract, so there is nothing to install
 /// and no language data to download. Pages are rendered to bitmaps with PDFium (via PDFtoImage)
 /// because PdfPig can read a PDF's text and structure but cannot rasterise it.
+///
+/// Recognises one page at a time with no cross-page context — see <see cref="OllamaOcrService"/>
+/// for a local-model alternative with better accuracy on scanned books.
 /// </summary>
 [SupportedOSPlatform("windows10.0.19041.0")]
-public sealed class OcrService
+public sealed class WindowsOcrService : IOcrEngine
 {
     private readonly RagOptions _options;
-    private readonly ILogger<OcrService> _logger;
+    private readonly ILogger<WindowsOcrService> _logger;
     private readonly Lazy<Windows.Globalization.Language?> _language;
 
-    public OcrService(IOptions<RagOptions> options, ILogger<OcrService> logger)
+    public WindowsOcrService(IOptions<RagOptions> options, ILogger<WindowsOcrService> logger)
     {
         _options = options.Value;
         _logger = logger;

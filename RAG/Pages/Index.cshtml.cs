@@ -13,7 +13,7 @@ namespace RAG.Pages
         VectorStoreProvider stores,
         RagService rag,
         OllamaClient ollama,
-        OcrService ocrService,
+        IOcrEngine ocrService,
         SystemMetrics metrics,
         IOptions<RagOptions> options,
         ILogger<IndexModel> logger) : PageModel

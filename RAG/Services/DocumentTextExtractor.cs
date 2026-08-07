@@ -20,7 +20,7 @@ public sealed record ExtractionResult(
 /// Pages that come back empty are handed to OCR, which is what makes scanned books searchable.
 /// </summary>
 public sealed partial class DocumentTextExtractor(
-    OcrService ocr,
+    IOcrEngine ocr,
     IOptions<RagOptions> options,
     ILogger<DocumentTextExtractor> logger)
 {

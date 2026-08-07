@@ -29,12 +29,27 @@ namespace RAG
                 client.Timeout = TimeSpan.FromSeconds(5);
             });
 
+            // Vision-model OCR calls can take a while on a big page, same reasoning as OllamaClient above.
+            builder.Services.AddHttpClient<OllamaOcrService>((provider, client) =>
+            {
+                var options = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<RagOptions>>().Value;
+                client.BaseAddress = new Uri(options.OllamaBaseUrl);
+                client.Timeout = Timeout.InfiniteTimeSpan;
+            });
+
             builder.Services.AddSingleton<SystemMetrics>();
             builder.Services.AddSingleton<BrowserPresence>();
             builder.Services.AddHostedService<BrowserSessionService>();
             builder.Services.AddSingleton<DatasetRegistry>();
             builder.Services.AddSingleton<VectorStoreProvider>();
-            builder.Services.AddSingleton<OcrService>();
+            builder.Services.AddSingleton<WindowsOcrService>();
+            builder.Services.AddSingleton<IOcrEngine>(provider =>
+            {
+                var options = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<RagOptions>>().Value;
+                return string.Equals(options.OcrProvider, "Windows", StringComparison.OrdinalIgnoreCase)
+                    ? provider.GetRequiredService<WindowsOcrService>()
+                    : provider.GetRequiredService<OllamaOcrService>();
+            });
             builder.Services.AddSingleton<DocumentTextExtractor>();
             builder.Services.AddSingleton<IndexingService>();
             builder.Services.AddScoped<RagService>();
